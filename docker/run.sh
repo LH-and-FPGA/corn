@@ -14,6 +14,7 @@ REPO_ROOT="$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel)"
 # Create a temporary directory to be shared between host<->docker.
 mkdir -p "${CACHE_PATH}"
 mkdir -p '/tmp/docker/'
+chmod 777 '/tmp/docker/'
 
 # Launch docker with the following configuration:
 # * Display/Gui connected
@@ -23,7 +24,7 @@ mkdir -p '/tmp/docker/'
 # * Current working git repository mounted at ${HOME}
 # * 8Gb Shared Memory
 # NOTE: comment out `--network host` for profiling with `nsys-ui`.
-docker run -it \
+docker run -it \   
     --mount type=bind,source="${REPO_ROOT}",target="/home/user/$(basename ${REPO_ROOT})" \
     --mount type=bind,source="${IG_PATH}",target="/opt/isaacgym/" \
     --mount type=bind,source="${CACHE_PATH}",target="/home/user/.cache/pkm" \

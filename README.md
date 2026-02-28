@@ -171,3 +171,11 @@ If you find this codebase useful, consider citing:
   year={2024}
 }
 ```
+PYTORCH_JIT=0 python3 pkm/scripts/train/show_ppo_arm.py \
+  +platform=debug +env=icra_base +run=icra_ours \
+  ++env.use_viewer=0 \
+  ++env.seed=56081 ++tag=policy ++global_device=cuda:0 \
+  ++path.root=/tmp/pkm/ppo-a \
+  ++icp_obs.icp.ckpt=imm-unicorn/corn-public:512-32-balanced-SAM-wd-5e-05-920 \
+  ++load_ckpt=imm-unicorn/corn-public:dr-icra_base-icra_ours-ours-final-000042 \
+  ++env.num_env=16
