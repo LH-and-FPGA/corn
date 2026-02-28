@@ -11,7 +11,24 @@ import math
 import nvtx
 
 
-from flash_attn.flash_attention import FlashMHA
+try:
+    from flash_attn.flash_attention import FlashMHA  # v1.x
+except ImportError:
+    from flash_attn.modules.mha import MHA as _MHA  # v2.x
+
+    class FlashMHA(_MHA):
+        """Compat shim: v1 FlashMHA(bias=, attention_dropout=) → v2 MHA."""
+        def __init__(self, embed_dim, num_heads, *, bias=True,
+                     attention_dropout=0.0, **kw):
+            super().__init__(embed_dim, num_heads,
+                             qkv_proj_bias=bias, out_proj_bias=bias,
+                             dropout=attention_dropout, **kw)
+
+        def forward(self, x, key_padding_mask=None, need_weights=False, **kw):
+            # v2 MHA doesn't support need_weights; returns just the tensor
+            out = super().forward(x, key_padding_mask=key_padding_mask, **kw)
+            # v1 returned (output, attn_weights); keep the same interface
+            return out, None
 from transformers.activations import ACT2FN
 from pkm.models.sdf.encoder.point_tokens import SpatialSort, HilbertCode
 from pkm.models.common import (

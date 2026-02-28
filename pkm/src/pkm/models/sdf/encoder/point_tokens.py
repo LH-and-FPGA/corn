@@ -9,7 +9,22 @@ import torch.nn as nn
 import einops
 
 from torch.nn.modules.activation import MultiheadAttention
-from flash_attn.flash_attention import FlashMHA
+try:
+    from flash_attn.flash_attention import FlashMHA  # v1.x
+except ImportError:
+    from flash_attn.modules.mha import MHA as _MHA  # v2.x
+
+    class FlashMHA(_MHA):
+        """Compat shim: v1 FlashMHA(bias=, attention_dropout=) → v2 MHA."""
+        def __init__(self, embed_dim, num_heads, *, bias=True,
+                     attention_dropout=0.0, **kw):
+            super().__init__(embed_dim, num_heads,
+                             qkv_proj_bias=bias, out_proj_bias=bias,
+                             dropout=attention_dropout, **kw)
+
+        def forward(self, x, key_padding_mask=None, need_weights=False, **kw):
+            out = super().forward(x, key_padding_mask=key_padding_mask, **kw)
+            return out, None
 
 from pkm.models.common import PosEncodingSine, MLP
 from pkm.models.common import replace_layer

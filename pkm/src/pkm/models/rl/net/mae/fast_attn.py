@@ -7,7 +7,10 @@ import torch as th
 import torch.nn as nn
 from einops import rearrange
 
-from flash_attn.flash_attention import FlashAttention
+try:
+    from flash_attn.flash_attention import FlashAttention  # v1.x
+except ImportError:
+    from flash_attn.modules.mha import FlashSelfAttention as FlashAttention  # v2.x
 
 from transformers.models.vit_mae.modeling_vit_mae import (
     ViTMAEModel,
